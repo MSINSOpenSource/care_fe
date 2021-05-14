@@ -493,6 +493,15 @@ export const ConsultationDetails = (props: any) => {
           consultationId={consultationId}
           type="CONSULTATION"
           hideBack={true}
+          file_category="AUDIO"
+        />
+        <FileUpload
+          facilityId={facilityId}
+          patientId={patientId}
+          consultationId={consultationId}
+          type="CONSULTATION"
+          hideBack={true}
+          file_category="UNSPECIFIED"
         />
       </div>
     </div>

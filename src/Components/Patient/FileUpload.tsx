@@ -38,11 +38,12 @@ interface FileUploadProps {
   facilityId: any;
   consultationId: any;
   hideBack: boolean;
+  file_category: string;
 }
 
 export const FileUpload = (props: FileUploadProps) => {
   const [file, setfile] = useState<File>();
-  const { facilityId, consultationId, patientId, type, hideBack } = props;
+  const { facilityId, consultationId, patientId, type, hideBack, file_category } = props;
   const id = patientId;
   const dispatch: any = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +79,7 @@ export const FileUpload = (props: FileUploadProps) => {
   const fetchData = useCallback(
     async (status: statusType) => {
       setIsLoading(true);
-      var data = { file_type: type, associating_id: getAssociatedId() };
+      var data = { file_category: file_category, file_type: type, associating_id: getAssociatedId() };
       const res = await dispatch(viewUpload(data));
       if (!status.aborted) {
         if (res && res.data) {
@@ -195,6 +196,7 @@ export const FileUpload = (props: FileUploadProps) => {
       file_type: type,
       name: uploadFileName,
       associating_id: getAssociatedId(),
+      file_category: file_category
     };
     dispatch(createUpload(requestData))
       .then(uploadfile)
@@ -209,6 +211,13 @@ export const FileUpload = (props: FileUploadProps) => {
       <Card className="mt-4">
         <CardContent>
           <div className="md:grid grid-cols-1 ">
+            <div>
+
+              
+
+            </div>
+
+
             <div>
               <h4>Upload New File</h4>
             </div>
@@ -232,22 +241,22 @@ export const FileUpload = (props: FileUploadProps) => {
               {uploadStarted ? (
                 <LinearProgressWithLabel value={uploadPercent} />
               ) : (
-                  <div>
-                    <input onChange={onFileChange} type="file" />
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      type="submit"
-                      style={{ marginLeft: "auto", float: "right" }}
-                      startIcon={
-                        <CloudUploadOutlineIcon>save</CloudUploadOutlineIcon>
-                      }
-                      onClick={handleUpload}
-                    >
-                      Upload
+                <div>
+                  <input onChange={onFileChange} type="file" />
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    type="submit"
+                    style={{ marginLeft: "auto", float: "right" }}
+                    startIcon={
+                      <CloudUploadOutlineIcon>save</CloudUploadOutlineIcon>
+                    }
+                    onClick={handleUpload}
+                  >
+                    Upload
                   </Button>
-                  </div>
-                )}
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
