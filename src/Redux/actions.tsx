@@ -1,4 +1,8 @@
-import { fireRequest, fireRequestForFiles } from "./fireRequest";
+import {
+  fireRequest,
+  fireRequestForFiles,
+  fireRequestFileUpload,
+} from "./fireRequest";
 
 // User
 export const postLogin = (params: object) => {
@@ -410,6 +414,9 @@ export const externalResult = (pathParam: object) => {
 };
 export const externalResultUploadCsv = (params: object) => {
   return fireRequest("externalResultUploadCsv", [], params);
+};
+export const externalResultUploadExcel = (files: any, params?: object) => {
+  return fireRequestFileUpload("externalResultUploadExcel", [], params, files);
 };
 
 export const deleteExternalResult = (id: string) => {
