@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { statusType, useAbortableEffect } from "../../Common/utils";
 import {
+  externalResultUploadExcel,
   externalResultUploadCsv,
   getAllLocalBodyByDistrict,
 } from "../../Redux/actions";
@@ -16,6 +17,7 @@ import {
 } from "../Common/HelperInputFields";
 import { ExternalResultLocalbodySelector } from "./ExternalResultLocalbodySelector";
 import StateManager from "react-select";
+import { CircularProgress } from "@material-ui/core";
 const get = require("lodash.get");
 const Loading = loadable(() => import("../Common/Loading"));
 const PageTitle = loadable(() => import("../Common/PageTitle"));
@@ -29,8 +31,19 @@ export default function ExternalResultUpload() {
   const [errors, setErrors] = useState<any>({});
   const initalState = { loading: false, lsgs: new Array<any>() };
   const [state, setState] = useState(initalState);
-  const handleForce = (data: any, fileInfo: any) => {
-    setCsvData(data);
+  const handleExcelUpload = (event: any) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    setLoading(true);
+    dispatch(externalResultUploadExcel(formData))
+      .then((res: any) => {
+        setLoading(false);
+        if (res && res.status >= 200) {
+          navigate("/external_results");
+        }
+      })
+      .catch(() => setLoading(false));
   };
 
   // const fetchLSG = useCallback(
@@ -89,15 +102,40 @@ export default function ExternalResultUpload() {
             <div className="mt-2 sm:mt-0 sm:col-span-2">
               <div className="mx-auto max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                 <div className="text-center">
-                  <CSVReader
-                    cssClass="react-csv-input"
-                    label="Select a CSV file in the specified format"
-                    onFileLoaded={handleForce}
-                    parserOptions={papaparseOptions}
-                  />
+                  {loading ? (
+                    <CircularProgress
+                      variant="indeterminate"
+                      disableShrink
+                      size={40}
+                      thickness={4}
+                    ></CircularProgress>
+                  ) : (
+                    <button className="btn btn-primary m-0 p-0">
+                      <label
+                        htmlFor="file-upload"
+                        className="px-4 py-2 cursor-pointer"
+                      >
+                        <div>
+                          Upload excel
+                          <input
+                            style={{ display: "none" }}
+                            id="file-upload"
+                            type="file"
+                            accept=".xls"
+                            onChange={handleExcelUpload}
+                          />
+                        </div>
+                      </label>
+                    </button>
+                  )}
+
+                  <div>
+                    Select an xls file recieved from icmr <br></br> website in
+                    the specified format
+                  </div>
                   <a
                     className="mt-2 text-xs font-light"
-                    href="https://docs.google.com/spreadsheets/d/17VfgryA6OYSYgtQZeXU9mp7kNvLySeEawvnLBO_1nuE/edit?usp=sharing"
+                    href="https://docs.google.com/spreadsheets/d/18p0Bt6CSTbY8IUl1ngL9lKDPNretHMZb/edit#gid=1718304698"
                     target="blank"
                   >
                     Sample Format
@@ -139,15 +177,6 @@ export default function ExternalResultUpload() {
             })}
           </div>
           <div className=""></div>
-          <div className="mt-2">
-            <button
-              disabled={loading}
-              className="btn btn-primary"
-              onClick={handleSubmit}
-            >
-              Save
-            </button>
-          </div>
         </div>
       </div>
     </div>
