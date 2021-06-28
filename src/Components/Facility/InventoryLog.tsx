@@ -4,7 +4,11 @@ const PageTitle = loadable(() => import("../Common/PageTitle"));
 const Loading = loadable(() => import("../Common/Loading"));
 import * as Notification from "../../Utils/Notifications.js";
 import { useDispatch } from "react-redux";
-import { getInventoryLog, flagInventoryItem } from "../../Redux/actions";
+import {
+  getInventoryLog,
+  flagInventoryItem,
+  deleteLastInventoryLog,
+} from "../../Redux/actions";
 import { statusType, useAbortableEffect } from "../../Common/utils";
 import Pagination from "../Common/Pagination";
 import moment from "moment";
@@ -18,6 +22,7 @@ export default function InventoryLog(props: any) {
   const initialInventory: any[] = [];
   let inventoryItem: any = null;
   const [inventory, setInventory] = useState(initialInventory);
+  const [current_stock, setCurrentStock] = useState(0);
   const [offset, setOffset] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -34,6 +39,7 @@ export default function InventoryLog(props: any) {
       if (!status.aborted) {
         if (res && res.data) {
           setInventory(res.data.results);
+          setCurrentStock(res.data.results[0].current_stock);
           setTotalCount(res.data.count);
           setItemName(res.data.results[0].item_object.name);
         }
@@ -52,6 +58,24 @@ export default function InventoryLog(props: any) {
     if (res && res.status === 204) {
       Notification.Success({
         msg: "Updated Successfully",
+      });
+      window.location.reload();
+    }
+    setSaving(false);
+  };
+
+  const removeLastInventoryLog = async (id: any) => {
+    setSaving(true);
+    const res = await dispatchAction(
+      deleteLastInventoryLog({
+        facility_external_id: facilityId,
+        id: id,
+      })
+    );
+
+    if (res && res.status === 201) {
+      Notification.Success({
+        msg: "Deleted Successfully",
       });
       window.location.reload();
     }
@@ -78,9 +102,7 @@ export default function InventoryLog(props: any) {
           <div className="flex items-center">
             <div className="ml-3">
               <p className="text-gray-900 whitespace-no-wrap">
-                {moment(inventoryItem.created_date).format(
-                  "DD-MM-YYYY hh:mm:ss"
-                )}
+                {moment(inventoryItem.created_date).format("DD-MM-YYYY LTS")}
               </p>
             </div>
           </div>
@@ -97,7 +119,7 @@ export default function InventoryLog(props: any) {
         <td className="px-5 py-5 border-b border-gray-200 text-sm hover:bg-gray-100">
           <p className="text-gray-900 whitespace-no-wrap lowercase">
             {inventoryItem.is_incoming ? (
-              <span className="ml-2 text-green-600">Added Stock</span>
+              <span className="ml-2 text-primary-600">Added Stock</span>
             ) : (
               <span className="ml-2 text-red-600">Used Stock</span>
             )}
@@ -110,7 +132,7 @@ export default function InventoryLog(props: any) {
             className="btn btn-default"
           >
             {inventoryItem.probable_accident ? (
-              <span className="text-green-500">
+              <span className="text-primary-500">
                 <i className="fas fa-exclamation-triangle pr-2"></i>UnMark
               </span>
             ) : (
@@ -148,16 +170,16 @@ export default function InventoryLog(props: any) {
             <table className="min-w-full leading-normal shadow rounded-lg overflow-hidden">
               <thead>
                 <tr>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-green-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-primary-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Created On
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-green-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-primary-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Quantity
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-green-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-primary-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-green-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-primary-400 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -189,7 +211,23 @@ export default function InventoryLog(props: any) {
       />
       <div className="container mx-auto px-4 sm:px-8">
         <div className="py-8 ">
-          <h4>Item: {itemName}</h4>
+          <div className="flex justify-between">
+            <h4>Item: {itemName}</h4>
+            {current_stock > 0 && (
+              <button
+                onClick={(_) =>
+                  removeLastInventoryLog(inventory[0].item_object.id)
+                }
+                disabled={saving}
+                className="btn btn-default"
+              >
+                <span className="text-red-500">
+                  <i className="fas fa-exclamation-circle pr-2"></i>
+                  Delete Last Entry
+                </span>
+              </button>
+            )}
+          </div>
           {inventoryItem}
         </div>
       </div>

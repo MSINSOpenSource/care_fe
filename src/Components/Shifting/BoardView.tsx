@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQueryParams, navigate } from "raviger";
 import ListFilter from "./ListFilter";
 import ShiftingBoard from "./ShiftingBoard";
+import BadgesList from "./BadgesList";
 import { SHIFTING_CHOICES } from "../../Common/constants";
 import { make as SlideOver } from "../Common/SlideOver.gen";
 import { InputSearchBox } from "../Common/SearchBox";
@@ -13,7 +14,6 @@ import moment from "moment";
 import GetAppIcon from "@material-ui/icons/GetApp";
 
 import { formatFilter, badge } from "./Commons";
-import { MJPJAY } from "../../Common/mahakavach";
 
 const Loading = loadable(() => import("../Common/Loading"));
 const PageTitle = loadable(() => import("../Common/PageTitle"));
@@ -34,10 +34,7 @@ export default function BoardView() {
   const [downloadFile, setDownloadFile] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  
   const local = JSON.parse(localStorage.getItem("shift-filters") || "{}");
-
-  badge;
 
   const updateQuery = (filter: any) => {
     // prevent empty filters from cluttering the url
@@ -62,6 +59,10 @@ export default function BoardView() {
     setShowFilters(false);
   };
 
+  useEffect(() => {
+    applyFilter(local);
+  }, []);
+
   const appliedFilters = formatFilter(qParams);
 
   const triggerDownload = async () => {
@@ -75,6 +76,11 @@ export default function BoardView() {
   const onListViewBtnClick = () => {
     navigate("/shifting/list-view", qParams);
     localStorage.setItem("defaultShiftView", "list");
+  };
+
+  const updateFilter = (params: any, local: any) => {
+    updateQuery(params);
+    localStorage.setItem("shift-filters", JSON.stringify(local));
   };
 
   return (
@@ -120,7 +126,7 @@ export default function BoardView() {
           </button>
         </div>
         <button
-          className="px-4 py-2 rounded-full border-2 border-gray-200 text-sm bg-white text-gray-800 w-32 leading-none transition-colors duration-300 ease-in focus:outline-none hover:text-green-600 hover:border-gray-400 focus:text-green-600 focus:border-gray-400"
+          className="px-4 py-2 rounded-full border-2 border-gray-200 text-sm bg-white text-gray-800 w-32 leading-none transition-colors duration-300 ease-in focus:outline-none hover:text-primary-600 hover:border-gray-400 focus:text-primary-600 focus:border-gray-400"
           onClick={onListViewBtnClick}
         >
           <i className="fa fa-list-ul mr-1" aria-hidden="true"></i>
@@ -128,7 +134,7 @@ export default function BoardView() {
         </button>
         <div className="flex items-start gap-2">
           <button
-            className="flex leading-none border-2 border-gray-200 bg-white rounded-full items-center transition-colors duration-300 ease-in focus:outline-none hover:text-green-600 focus:text-green-600 focus:border-gray-400 hover:border-gray-400 rounded-r-full px-4 py-2 text-sm"
+            className="flex leading-none border-2 border-gray-200 bg-white rounded-full items-center transition-colors duration-300 ease-in focus:outline-none hover:text-primary-600 focus:text-primary-600 focus:border-gray-400 hover:border-gray-400 rounded-r-full px-4 py-2 text-sm"
             onClick={(_) => setShowFilters((show) => !show)}
           >
             <i className="fa fa-filter mr-1" aria-hidden="true"></i>
@@ -136,129 +142,12 @@ export default function BoardView() {
           </button>
         </div>
       </div>
-      <div className="flex space-x-2 mt-2 ml-2">
-        {badge(
-          "Emergency",
-          appliedFilters.emergency === "true"
-            ? "yes"
-            : appliedFilters.emergency === "false"
-            ? "no"
-            : undefined
-        )}
-        {badge(
-          `Is ${MJPJAY}`,
-          appliedFilters.is_kasp === "true"
-            ? "yes"
-            : appliedFilters.is_kasp === "false"
-            ? "no"
-            : undefined
-        )}
-        {badge(
-          "Up Shift",
-          appliedFilters.is_up_shift === "true"
-            ? "yes"
-            : appliedFilters.is_up_shift === "false"
-            ? "no"
-            : undefined
-        )}
-        {badge("Phone Number", appliedFilters.patient_phone_number)}
-        {badge("Patient Name", appliedFilters.patient_name)}
-        {badge("Modified After", appliedFilters.modified_date_after)}
-        {badge("Modified Before", appliedFilters.modified_date_before)}
-        {badge("Created Before", appliedFilters.created_date_before)}
-        {badge("Created After", appliedFilters.created_date_after)}
-        {badge("Assigned To", appliedFilters.assigned_user || appliedFilters.assigned_to)}
-        {badge(
-          "Filtered By",
-          appliedFilters.assigned_facility && "Assigned Facility"
-        )}
-        {badge(
-          "Filtered By",
-          appliedFilters.orgin_facility && "Origin Facility"
-        )}
-        {badge(
-          "Filtered By",
-          appliedFilters.shifting_approving_facility &&
-            "Shifting Approving Facility"
-        )}
-        {badge("Disease Status", appliedFilters.disease_status)}
-        {badge(
-          "status",
-          ((appliedFilters.status != "--" && appliedFilters.status) ||
-            (local.status !== "--" && local.status))
-        )}
-
-        {badge(
-          "Emergency",
-          local.emergency === "yes" || appliedFilters.emergency === "true"
-            ? "yes"
-            : local.emergency === "no" || appliedFilters.emergency === "false"
-              ? "no"
-              : undefined
-        )}
-
-        {badge(
-          "Is KASP",
-          local.is_kasp === "yes" || appliedFilters.is_kasp === "true"
-            ? "yes"
-            : local.is_kasp === "no" || appliedFilters.is_kasp === "false"
-              ? "no"
-              : undefined
-        )}
-
-        {badge(
-          "Up Shift",
-          local.is_up_shift === "yes" || appliedFilters.is_up_shift === "true"
-            ? "yes"
-            : local.is_up_shift === "no" || appliedFilters.is_up_shift === "false"
-              ? "no"
-              : undefined
-        )}
-
-        {badge("Phone Number", appliedFilters.patient_phone_number || local.patient_phone_number)}
-        {badge("Patient Name", appliedFilters.patient_name || local.patient_name)}
-        {badge("Modified After", appliedFilters.modified_date_after || local.modified_date_after)}
-        {badge("Modified Before", appliedFilters.modified_date_before || local.modified_date_before)}
-        {badge("Created Before", appliedFilters.created_date_before || local.created_date_before)}
-        {badge("Created After", appliedFilters.created_date_after || local.created_date_after)}
-        {badge("Disease Status", appliedFilters.disease_status || local.disease_status)}
-
-        {badge("Assigned To",
-          appliedFilters.assigned_user || appliedFilters.assigned_to ||
-          local.assigned_user || local.assigned_to)
-        }
-
-        {badge(
-          "Filtered By",
-          (appliedFilters.assigned_facility || local.assigned_facility) && "Assigned Facility"
-        )}
-
-        {badge(
-          "Filtered By",
-          (appliedFilters.orgin_facility || local.orgin_facility) && "Origin Facility"
-        )}
-
-        {badge(
-          "Filtered By",
-          (appliedFilters.shifting_approving_facility || local.shifting_approving_facility) &&
-          "Shifting Approving Facility"
-        )}
-
-        {badge("Emergency", appliedFilters.emergency === 'true' ? 'yes' : appliedFilters.emergency === 'false' ? 'no' : undefined)}
-        {badge("Is KASP", appliedFilters.is_kasp === 'true' ? 'yes' : appliedFilters.is_kasp === 'false' ? 'no' : undefined)}
-        {badge("Up Shift", appliedFilters.is_up_shift === 'true' ? 'yes' : appliedFilters.is_up_shift === 'false' ? 'no' : undefined)}
-        {badge("Phone Number", appliedFilters.patient_phone_number)}
-        {badge("Patient Name", appliedFilters.patient_name)}
-        {badge("Modified After", appliedFilters.modified_date_after)}
-        {badge("Modified Before", appliedFilters.modified_date_before)}
-        {badge("Created Before", appliedFilters.created_date_before)}
-        {badge("Created After", appliedFilters.created_date_after)}
-        {badge("Assigned To", appliedFilters.assigned_user || appliedFilters.assigned_to)}
-        {badge("Filtered By", appliedFilters.assigned_facility && "Assigned Facility")}
-        {badge("Filtered By", appliedFilters.orgin_facility && "Origin Facility")}
-        {badge("Filtered By", appliedFilters.shifting_approving_facility && "Shifting Approving Facility")}
-        {badge("Disease Status", appliedFilters.disease_status)}
-      </div>
+      <BadgesList
+        filterParams={qParams}
+        appliedFilters={appliedFilters}
+        local={local}
+        updateFilter={updateFilter}
+      />
       <div className="flex mt-4 pb-2 flex-1 items-start overflow-x-scroll">
         {isLoading ? (
           <Loading />
@@ -282,6 +171,7 @@ export default function BoardView() {
       <SlideOver show={showFilters} setShow={setShowFilters}>
         <div className="bg-white min-h-screen p-4">
           <ListFilter
+            local={local}
             filter={qParams}
             onChange={applyFilter}
             closeFilter={() => setShowFilters(false)}

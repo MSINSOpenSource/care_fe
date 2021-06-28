@@ -15,9 +15,13 @@ export interface FacilityModel {
   type_b_cylinders?: number;
   type_c_cylinders?: number;
   type_d_cylinders?: number;
+  type_j_cylinders?: number;
+  type_gaseous?: number;
   expected_type_b_cylinders?: number;
   expected_type_c_cylinders?: number;
   expected_type_d_cylinders?: number;
+  expected_type_j_cylinders?: number;
+  expected_type_gaseous?: number;
   expected_oxygen_requirement?: number;
   local_body_object?: {
     name: string;
@@ -38,6 +42,7 @@ export interface FacilityModel {
 export interface CapacityModal {
   id?: number;
   room_type?: number;
+  modified_date?: any;
   total_capacity?: number;
   current_capacity?: number;
 }
@@ -125,4 +130,13 @@ export interface InventoryItemsModel {
       name: string;
     }
   ];
+}
+
+export interface LocationModel {
+  id?: string;
+  name?: string;
+  description?: string;
+  facility?: {
+    name: string;
+  };
 }

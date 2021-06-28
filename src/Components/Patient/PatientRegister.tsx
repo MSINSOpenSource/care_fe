@@ -154,6 +154,7 @@ const initForm: any = {
   is_vaccinated: "false",
   number_of_doses: "1",
   vaccine_name: null,
+  last_vaccinated_date: null,
   ...medicalHistoryChoices,
 };
 
@@ -222,7 +223,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
     transfer?: boolean;
     patientList: Array<DupPatientModel>;
   }>({ patientList: [] });
-  const [sameAddress, setSameAddress] = useState(false);
+  const [sameAddress, setSameAddress] = useState(true);
   const [{ extId }, setQuery] = useQueryParams();
 
   useEffect(() => {
@@ -297,6 +298,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
   const fetchExtResultData = async (e: any) => {
     if (e) e.preventDefault();
     setIsLoading(true);
+    if (!careExtId) return;
     const res = await dispatchAction(externalResult({ id: careExtId }));
 
     if (res && res.data) {
@@ -434,6 +436,9 @@ export const PatientRegister = (props: PatientRegisterProps) => {
               ? String(res.data.number_of_doses)
               : "1",
             vaccine_name: res.data.vaccine_name ? res.data.vaccine_name : null,
+            last_vaccinated_date: res.data.last_vaccinated_date
+              ? res.data.last_vaccinated_date
+              : null,
           };
           res.data.medical_history.forEach((i: any) => {
             const medicalHistory = medicalHistoryTypes.find(
@@ -500,11 +505,11 @@ export const PatientRegister = (props: PatientRegisterProps) => {
           return;
         case "permanent_address":
           if (!sameAddress) {
-            if(!state.form[field]){
+            if (!state.form[field]) {
               errors[field] = "Field is required";
               invalidForm = true;
             }
-          } 
+          }
           return;
         case "date_of_birth":
           if (!state.form[field]) {
@@ -619,6 +624,13 @@ export const PatientRegister = (props: PatientRegisterProps) => {
           }
           return;
 
+        case "number_of_aged_dependents":
+          if (state.form.number_of_aged_dependents > 100) {
+            errors["number_of_aged_dependents"] = "Max allowed is 100";
+            invalidForm = true;
+          }
+          return;
+
         default:
           return;
       }
@@ -678,6 +690,12 @@ export const PatientRegister = (props: PatientRegisterProps) => {
           state.form.vaccine_name !== "Select" &&
           state.form.is_vaccinated === "true"
             ? state.form.vaccine_name
+            : null,
+        last_vaccinated_date:
+          state.form.is_vaccinated === "true"
+            ? state.form.last_vaccinated_date
+              ? state.form.last_vaccinated_date
+              : null
             : null,
         test_type: state.form.test_type,
         name: state.form.name,
@@ -805,6 +823,13 @@ export const PatientRegister = (props: PatientRegisterProps) => {
       form[field] = date;
       dispatch({ type: "set_form", form });
     }
+  };
+
+  const handleNameChange = (e: any) => {
+    const onlyText = e.target.value.replace(/[0-9]+$/i, "");
+    const form = { ...state.form };
+    form[e.target.name] = onlyText;
+    dispatch({ type: "set_form", form });
   };
 
   const handleCheckboxFieldChange = (e: any) => {
@@ -979,7 +1004,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                   result in duplication of patient records.
                 </div>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                  <div>
+                  <div data-testid="phone-number">
                     <PhoneNumberField
                       label="Phone Number*"
                       value={state.form.phone_number}
@@ -990,7 +1015,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       errors={state.errors.phone_number}
                     />
                   </div>
-                  <div>
+                  <div data-testid="date-of-birth">
                     <InputLabel id="date_of_birth-label">
                       Date of birth*
                     </InputLabel>
@@ -1008,7 +1033,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                     />
                   </div>
 
-                  <div>
+                  <div data-testid="name">
                     <InputLabel id="name-label">Name*</InputLabel>
                     <TextInputField
                       name="name"
@@ -1016,12 +1041,12 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       margin="dense"
                       type="text"
                       value={state.form.name}
-                      onChange={handleChange}
+                      onChange={handleNameChange}
                       errors={state.errors.name}
                     />
                   </div>
 
-                  <div>
+                  <div data-testid="disease-status">
                     <InputLabel id="disease_status-label">
                       Disease Status*
                     </InputLabel>
@@ -1167,6 +1192,26 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                     </div>
                   )}
 
+                  {state.form.is_vaccinated === "true" && (
+                    <div>
+                      <InputLabel id="last_vaccinated_date-label">
+                        Last Date of Vaccination
+                      </InputLabel>
+                      <DateInputField
+                        fullWidth={true}
+                        value={state.form.last_vaccinated_date}
+                        onChange={(date) =>
+                          handleDateChange(date, "last_vaccinated_date")
+                        }
+                        errors={state.errors.last_vaccinated_date}
+                        inputVariant="outlined"
+                        margin="dense"
+                        openTo="year"
+                        disableFuture={true}
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <InputLabel id="test_type-label">Test Type</InputLabel>
                     <SelectField
@@ -1224,7 +1269,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       disableFuture={true}
                     />
                   </div>
-                  <div>
+                  <div data-testid="Gender">
                     <InputLabel id="gender-label">Gender*</InputLabel>
                     <SelectField
                       name="gender"
@@ -1329,7 +1374,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
 
                   {state.form.nationality === "India" ? (
                     <>
-                      <div>
+                      <div data-testid="state">
                         <InputLabel id="gender-label">State*</InputLabel>
                         {isStateLoading ? (
                           <CircularProgress size={20} />
@@ -1350,7 +1395,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                         )}
                       </div>
 
-                      <div>
+                      <div data-testid="district">
                         <InputLabel id="district-label">District*</InputLabel>
                         {isDistrictLoading ? (
                           <CircularProgress size={20} />
@@ -1371,7 +1416,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                         )}
                       </div>
 
-                      <div>
+                      <div data-testid="localbody">
                         <InputLabel id="local_body-label">
                           Localbody*
                         </InputLabel>
@@ -1410,7 +1455,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                     </div>
                   )}
 
-                  <div>
+                  <div data-testid="current-address">
                     <InputLabel id="address-label">Current Address*</InputLabel>
                     <MultilineInputField
                       rows={2}
@@ -1424,7 +1469,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       errors={state.errors.address}
                     />
                   </div>
-                  <div>
+                  <div data-testid="permanent-address">
                     <InputLabel id="permanent-address-label">
                       Permanent Address*
                     </InputLabel>
@@ -1447,7 +1492,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       />
                     )}
                   </div>
-                  <div>
+                  <div data-testid="ward-respective-lsgi">
                     <InputLabel id="ward-label">
                       Ward/Division of respective LSGI*
                     </InputLabel>
@@ -1482,7 +1527,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       errors={state.errors.village}
                     />
                   </div>
-                  <div>
+                  <div data-testid="pincode">
                     <InputLabel id="name-label">Pincode*</InputLabel>
                     <TextInputField
                       name="pincode"
@@ -1494,7 +1539,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       errors={state.errors.pincode}
                     />
                   </div>
-                  <div>
+                  <div data-testid="blood-group">
                     <InputLabel id="blood_group-label">Blood Group*</InputLabel>
                     <SelectField
                       name="blood_group"
@@ -1508,7 +1553,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       errors={state.errors.blood_group}
                     />
                   </div>
-                  <div>
+                  <div data-testid="emergency-phone-number">
                     <PhoneNumberField
                       label="Emergency contact number*"
                       value={state.form.emergency_phone_number}
@@ -1859,6 +1904,7 @@ export const PatientRegister = (props: PatientRegisterProps) => {
                       <CheckCircleOutlineIcon>save</CheckCircleOutlineIcon>
                     }
                     onClick={(e) => handleSubmit(e)}
+                    data-testid="submit-button"
                   >
                     {" "}
                     {buttonText}{" "}

@@ -15,9 +15,8 @@ const prodPlugins = (isDev) => {
   }
 
   return [
-    new WorkboxPlugin.GenerateSW({
-      clientsClaim: true,
-      skipWaiting: true,
+    new WorkboxPlugin.InjectManifest({
+      swSrc: "./src/service-worker.js",
       maximumFileSizeToCacheInBytes: 7340032,
       exclude: ["build-meta.json", /\.map$/],
     }),
@@ -56,7 +55,7 @@ module.exports = (env, argv) => {
             },
           },
       runtimeChunk: {
-        name: entrypoint => `runtime-${entrypoint.name}`,
+        name: (entrypoint) => `runtime-${entrypoint.name}`,
       },
     },
     devtool: isDev ? "eval-cheap-module-source-map" : "none",
@@ -72,7 +71,7 @@ module.exports = (env, argv) => {
       port: 4000,
       proxy: {
         "/api": {
-          target: "https://careapi.coronasafe.in/",
+          target: "https://careapi.mahakavach.in/",
           changeOrigin: true,
         },
       },
@@ -82,10 +81,7 @@ module.exports = (env, argv) => {
       rules: [
         {
           test: /\.(ts|tsx)$/,
-          include: [
-            path.resolve(__dirname, "src"),
-            path.resolve(__dirname, "node_modules/@coronasafe"),
-          ],
+          include: [path.resolve(__dirname, "src")],
           loader: "ts-loader",
         },
         {
@@ -95,12 +91,7 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.(sa|sc|c)ss$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            "css-loader",
-            "sass-loader",
-            "postcss-loader",
-          ],
+          use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
         },
         {
           test: /\.(png|jpe?g|gif)$/i,

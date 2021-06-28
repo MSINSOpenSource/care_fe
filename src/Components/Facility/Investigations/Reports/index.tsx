@@ -18,7 +18,7 @@ import { InvestigationResponse } from "./types";
 import ReportTable from "./ReportTable";
 import * as Notification from "../../../../Utils/Notifications";
 
-const RESULT_PER_PAGE = 15;
+const RESULT_PER_PAGE = 14;
 
 const useStyle = makeStyles({
   button: {
@@ -268,7 +268,15 @@ const InvestigationReports = ({ id }: any) => {
     setSessionPage(count);
     handleGenerateReports(count);
   };
+  const handleSelectAllClick = (prev: boolean) => {
+    const e = {
+      target: {
+        value: prev ? [] : investigationGroups.map((i) => i.external_id),
+      },
+    };
 
+    handleGroupSelect(e);
+  };
   const loadMoreDisabled =
     page - 1 >= totalPage || isLoading.tableData || isLoadMoreDisabled;
   const getTestDisabled =
@@ -300,6 +308,8 @@ const InvestigationReports = ({ id }: any) => {
               optionKey="external_id"
               onChange={handleGroupSelect}
               placeholder="Select Groups"
+              selectAll
+              onSelectAllClick={handleSelectAllClick}
             />
           </div>
           {!isLoading.investigationLoading && (
@@ -338,7 +348,6 @@ const InvestigationReports = ({ id }: any) => {
                   )}
                   renderInput={(params) => (
                     <>
-
                       <InputLabel>
                         Select Investigations (all investigations will be
                         selected by default)
@@ -396,7 +405,7 @@ const InvestigationReports = ({ id }: any) => {
                     {isLoading.tableData ? "Loading..." : "Next Sessions"}
                   </Button>
                 </ButtonGroup>
-          
+
                 <ReportTable
                   investigationData={investigationTableData}
                   title="Report"

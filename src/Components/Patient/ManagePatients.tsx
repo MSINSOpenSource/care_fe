@@ -8,11 +8,16 @@ import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
 import { navigate, useQueryParams } from "raviger";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { CSVLink } from "react-csv";
 import { useDispatch } from "react-redux";
 import SwipeableViews from "react-swipeable-views";
-import { getAllPatient } from "../../Redux/actions";
+import {
+  getAllPatient,
+  getDistrict,
+  getLocalBody,
+  getFacility,
+} from "../../Redux/actions";
 import { PhoneNumberField } from "../Common/HelperInputFields";
 import NavTabs from "../Common/NavTabs";
 import Pagination from "../Common/Pagination";
@@ -21,10 +26,12 @@ import {
   ADMITTED_TO,
   GENDER_TYPES,
   TELEMEDICINE_ACTIONS,
+  PATIENT_FILTER_ADMITTED_TO,
 } from "../../Common/constants";
 import { make as SlideOver } from "../Common/SlideOver.gen";
 import PatientFilterV2 from "./PatientFilterV2";
 import { parseOptionId } from "../../Common/utils";
+import { statusType, useAbortableEffect } from "../../Common/utils";
 
 const Loading = loadable(() => import("../Common/Loading"));
 const PageTitle = loadable(() => import("../Common/PageTitle"));
@@ -56,7 +63,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-function Badge(props: { color: string; icon: string; text: string }) {
+export function Badge(props: { color: string; icon: string; text: string }) {
   return (
     <span
       className="m-1 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium leading-4 bg-gray-100 text-gray-700"
@@ -90,7 +97,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RESULT_LIMIT = 15;
+const RESULT_LIMIT = 14;
 
 export const PatientManager = (props: any) => {
   const { facilityId } = props;
@@ -106,6 +113,10 @@ export const PatientManager = (props: any) => {
   const [qParams, setQueryParams] = useQueryParams();
   const [showFilters, setShowFilters] = useState(false);
 
+  const [districtName, setDistrictName] = useState("");
+  const [localbodyName, setLocalbodyName] = useState("");
+  const [facilityName, setFacilityName] = useState("");
+
   const tabValue = qParams.is_active === "False" ? 1 : 0;
 
   const params = {
@@ -118,6 +129,7 @@ export const PatientManager = (props: any) => {
       : undefined,
     local_body: qParams.lsgBody || undefined,
     facility: facilityId || qParams.facility,
+    district: qParams.district || undefined,
     offset: (qParams.page ? qParams.page - 1 : 0) * RESULT_LIMIT,
     created_date_before: qParams.created_date_before || undefined,
     created_date_after: qParams.created_date_after || undefined,
@@ -149,6 +161,12 @@ export const PatientManager = (props: any) => {
     covin_id: qParams.covin_id || undefined,
     is_kasp: qParams.is_kasp || undefined,
     is_declared_positive: qParams.is_declared_positive || undefined,
+    last_consultation_symptoms_onset_date_before:
+      qParams.last_consultation_symptoms_onset_date_before || undefined,
+    last_consultation_symptoms_onset_date_after:
+      qParams.last_consultation_symptoms_onset_date_after || undefined,
+    last_consultation_is_telemedicine:
+      qParams.last_consultation_is_telemedicine || undefined,
   };
 
   let managePatients: any = null;
@@ -199,6 +217,7 @@ export const PatientManager = (props: any) => {
     qParams.age_min,
     qParams.last_consultation_admitted_to_list,
     qParams.facility,
+    qParams.district,
     qParams.category,
     qParams.gender,
     qParams.ordering,
@@ -217,7 +236,76 @@ export const PatientManager = (props: any) => {
     qParams.lsgBody,
     qParams.is_kasp,
     qParams.is_declared_positive,
+    qParams.date_declared_positive_before,
+    qParams.date_declared_positive_after,
+    qParams.date_of_result_before,
+    qParams.date_of_result_after,
+    qParams.last_consultation_symptoms_onset_date_before,
+    qParams.last_consultation_symptoms_onset_date_after,
+    qParams.last_consultation_is_telemedicine,
   ]);
+
+  const fetchDistrictName = useCallback(
+    async (status: statusType) => {
+      setIsLoading(true);
+      const res =
+        Number(qParams.district) &&
+        (await dispatch(getDistrict(qParams.district)));
+      if (!status.aborted) {
+        setDistrictName(res?.data?.name);
+        setIsLoading(false);
+      }
+    },
+    [dispatch, qParams.district]
+  );
+
+  useAbortableEffect(
+    (status: statusType) => {
+      fetchDistrictName(status);
+    },
+    [fetchDistrictName]
+  );
+
+  const fetchLocalbodyName = useCallback(
+    async (status: statusType) => {
+      setIsLoading(true);
+      const res =
+        Number(qParams.lsgBody) &&
+        (await dispatch(getLocalBody({ id: qParams.lsgBody })));
+      if (!status.aborted) {
+        setLocalbodyName(res?.data?.name);
+        setIsLoading(false);
+      }
+    },
+    [dispatch, qParams.lsgBody]
+  );
+
+  useAbortableEffect(
+    (status: statusType) => {
+      fetchLocalbodyName(status);
+    },
+    [fetchLocalbodyName]
+  );
+
+  const fetchFacilityName = useCallback(
+    async (status: statusType) => {
+      setIsLoading(true);
+      const res =
+        qParams.facility && (await dispatch(getFacility(qParams.facility)));
+      if (!status.aborted) {
+        setFacilityName(res?.data?.name);
+        setIsLoading(false);
+      }
+    },
+    [dispatch, qParams.facility]
+  );
+
+  useAbortableEffect(
+    (status: statusType) => {
+      fetchFacilityName(status);
+    },
+    [fetchFacilityName]
+  );
 
   const updateQuery = (params: any) => {
     const nParams = Object.assign({}, qParams, params);
@@ -274,6 +362,42 @@ export const PatientManager = (props: any) => {
         </span>
       )
     );
+  };
+
+  const LastAdmittedToTypeBadges = () => {
+    const badge = (key: string, value: any, id: string) => {
+      return (
+        value && (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium leading-4 bg-white text-gray-600 border">
+            {key}
+            {": "}
+            {value}
+            <i
+              className="fas fa-times ml-2 rounded-full cursor-pointer hover:bg-gray-500 px-1 py-0.5"
+              onClick={(_) => {
+                const lcat = qParams.last_consultation_admitted_to_list
+                  .split(",")
+                  .filter((x: string) => x != id)
+                  .join(",");
+                updateQuery({
+                  ...qParams,
+                  last_consultation_admitted_to_list: lcat,
+                });
+              }}
+            ></i>
+          </span>
+        )
+      );
+    };
+
+    return qParams.last_consultation_admitted_to_list
+      .split(",")
+      .map((id: string) => {
+        const text = PATIENT_FILTER_ADMITTED_TO.find(
+          (obj) => obj.id == id
+        )?.text;
+        return badge("Bed Type", text, id);
+      });
   };
 
   let patientList: any[] = [];
@@ -336,7 +460,7 @@ export const PatientManager = (props: any) => {
               {patient.allow_transfer ? (
                 <Badge color="yellow" icon="unlock" text="Transfer Allowed" />
               ) : (
-                <Badge color="green" icon="lock" text="Transfer Blocked" />
+                <Badge color="primary" icon="lock" text="Transfer Blocked" />
               )}
               {patient.disease_status === "POSITIVE" && (
                 <Badge color="red" icon="radiation" text="Positive" />
@@ -344,7 +468,7 @@ export const PatientManager = (props: any) => {
               {["NEGATIVE", "RECOVERED"].indexOf(patient.disease_status) >=
                 0 && (
                 <Badge
-                  color="green"
+                  color="primary"
                   icon="smile-beam"
                   text={patient.disease_status}
                 />
@@ -371,10 +495,24 @@ export const PatientManager = (props: any) => {
               )}
               {patient.disease_status === "EXPIRED" && (
                 <Badge
-                color="yellow"
-                icon="exclamation-triangle"
-                text="Patient Expired"
-              />
+                  color="yellow"
+                  icon="exclamation-triangle"
+                  text="Patient Expired"
+                />
+              )}
+              {(!patient.last_consultation ||
+                patient.last_consultation?.facility !== patient.facility) && (
+                <span className="relative inline-flex">
+                  <Badge
+                    color="red"
+                    icon="notes-medical"
+                    text="No Consultation Filed"
+                  />
+                  <span className="flex absolute h-3 w-3 top-0 right-0 -mt-1 -mr-1">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                  </span>
+                </span>
               )}
             </div>
             <div className="px-2">
@@ -546,8 +684,8 @@ export const PatientManager = (props: any) => {
           )}
           {badge(
             "Admitted Before",
-            qParams.last_consultation_discharge_date_before,
-            "last_consultation_discharge_date_before"
+            qParams.last_consultation_admission_date_before,
+            "last_consultation_admission_date_before"
           )}
           {badge(
             "Admitted After",
@@ -564,6 +702,8 @@ export const PatientManager = (props: any) => {
             qParams.last_consultation_discharge_date_after,
             "last_consultation_discharge_date_after"
           )}
+          {qParams.last_consultation_admitted_to_list &&
+            LastAdmittedToTypeBadges()}
           {qParams.number_of_doses &&
             badge(
               "Number of Vaccination Doses",
@@ -572,13 +712,14 @@ export const PatientManager = (props: any) => {
             )}
           {qParams.is_kasp &&
             badge(
-              "KASP",
-              qParams.is_kasp === "true" ? "KASP" : "Non KASP",
+              "MJPJAY",
+              qParams.is_kasp === "true" ? "MJPJAY" : "Non MJPJAY",
               "is_kasp"
             )}
           {badge("COVIN ID", qParams.covin_id, "covin_id")}
 
-          {badge("Filtered By: Facility", qParams.facility, "facility")}
+          {badge("Facility", facilityName, "facility")}
+          {badge("District", districtName, "district")}
           {badge("Ordering", qParams.ordering, "ordering")}
           {badge("Category", qParams.category, "category")}
           {badge("Disease Status", qParams.disease_status, "disease_status")}
@@ -595,11 +736,50 @@ export const PatientManager = (props: any) => {
           {badge("Age min", qParams.age_min, "age_min")}
           {badge("Age max", qParams.age_max, "age_max")}
           {badge("SRF ID", qParams.srf_id, "srf_id")}
-          {badge("LSG Body ID", qParams.lsgBody, "lsgBody")}
+          {badge("LSG Body", localbodyName, "lsgBody")}
           {badge(
             "Declared Status",
             qParams.is_declared_positive,
             "is_declared_positive"
+          )}
+          {badge(
+            "Result before",
+            qParams.date_of_result_before,
+            "date_of_result_before"
+          )}
+          {badge(
+            "Result after",
+            qParams.date_of_result_after,
+            "date_of_result_after"
+          )}
+
+          {badge(
+            "Declared positive before",
+            qParams.date_declared_positive_before,
+            "date_declared_positive_before"
+          )}
+
+          {badge(
+            "Declared positive after",
+            qParams.date_declared_positive_after,
+            "date_declared_positive_after"
+          )}
+
+          {badge(
+            "Onset of symptoms before",
+            qParams.last_consultation_symptoms_onset_date_before,
+            "last_consultation_symptoms_onset_date_before"
+          )}
+
+          {badge(
+            "Onset of symptoms after",
+            qParams.last_consultation_symptoms_onset_date_after,
+            "last_consultation_symptoms_onset_date_after"
+          )}
+          {badge(
+            "Telemedicine",
+            qParams.last_consultation_is_telemedicine,
+            "last_consultation_is_telemedicine"
           )}
         </div>
       </div>

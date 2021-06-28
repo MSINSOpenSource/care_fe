@@ -80,10 +80,14 @@ const initForm: any = {
   type_b_cylinders: "",
   type_c_cylinders: "",
   type_d_cylinders: "",
+  type_j_cylinders: "",
+  type_gaseous: "",
   expected_oxygen_requirement: "",
   expected_type_b_cylinders: "",
   expected_type_c_cylinders: "",
   expected_type_d_cylinders: "",
+  expected_type_j_cylinders: "",
+  expected_type_gaseous: "",
 };
 
 const initError = Object.assign(
@@ -134,8 +138,9 @@ export const FacilityCreate = (props: FacilityProps) => {
   const [localBody, setLocalBody] = useState(selectDistrict);
   const [ward, setWard] = useState(selectLocalBody);
 
-  const [anchorEl, setAnchorEl] =
-    React.useState<(EventTarget & Element) | null>(null);
+  const [anchorEl, setAnchorEl] = React.useState<
+    (EventTarget & Element) | null
+  >(null);
   const [mapLoadLocation, setMapLoadLocation] = useState(DEFAULT_MAP_LOCATION);
 
   const headerText = !facilityId ? "Create Facility" : "Update Facility";
@@ -212,9 +217,13 @@ export const FacilityCreate = (props: FacilityProps) => {
             type_b_cylinders: res.data.type_b_cylinders,
             type_c_cylinders: res.data.type_c_cylinders,
             type_d_cylinders: res.data.type_d_cylinders,
+            type_j_cylinders: res.data.type_j_cylinders,
+            type_gaseous: res.data.type_gaseous,
             expected_type_b_cylinders: res.data.expected_type_b_cylinders,
             expected_type_c_cylinders: res.data.expected_type_c_cylinders,
             expected_type_d_cylinders: res.data.expected_type_d_cylinders,
+            expected_type_j_cylinders: res.data.expected_type_j_cylinders,
+            expected_type_gaseous: res.data.expected_type_gaseous,
             expected_oxygen_requirement: res.data.expected_oxygen_requirement,
             oxygen_capacity: res.data.oxygen_capacity
               ? res.data.oxygen_capacity
@@ -391,6 +400,12 @@ export const FacilityCreate = (props: FacilityProps) => {
         type_d_cylinders: state.form.type_d_cylinders
           ? Number(state.form.type_d_cylinders)
           : 0,
+        type_j_cylinders: state.form.type_j_cylinders
+          ? Number(state.form.type_j_cylinders)
+          : 0,
+        type_gaseous: state.form.type_gaseous
+          ? Number(state.form.type_gaseous)
+          : 0,
         expected_oxygen_requirement: state.form.expected_oxygen_requirement
           ? Number(state.form.expected_oxygen_requirement)
           : 0,
@@ -404,6 +419,14 @@ export const FacilityCreate = (props: FacilityProps) => {
 
         expected_type_d_cylinders: state.form.expected_type_d_cylinders
           ? Number(state.form.expected_type_d_cylinders)
+          : 0,
+
+        expected_type_j_cylinders: state.form.expected_type_j_cylinders
+          ? Number(state.form.expected_type_j_cylinders)
+          : 0,
+
+        expected_type_gaseous: state.form.expected_type_gaseous
+          ? Number(state.form.expected_type_gaseous)
           : 0,
       };
       const res = await dispatchAction(
@@ -453,6 +476,7 @@ export const FacilityCreate = (props: FacilityProps) => {
               <div>
                 <InputLabel id="facility_type-label">Facility Type*</InputLabel>
                 <SelectField
+                  data-test="facility-type"
                   name="facility_type"
                   variant="outlined"
                   margin="dense"
@@ -465,8 +489,11 @@ export const FacilityCreate = (props: FacilityProps) => {
               </div>
 
               <div>
-                <InputLabel id="name-label">Facility Name*</InputLabel>
+                <InputLabel htmlFor="facility-name" id="name-label">
+                  Facility Name*
+                </InputLabel>
                 <TextInputField
+                  id="facility-name"
                   fullWidth
                   name="name"
                   placeholder=""
@@ -484,6 +511,7 @@ export const FacilityCreate = (props: FacilityProps) => {
                   <CircularProgress size={20} />
                 ) : (
                   <SelectField
+                    data-test="facility-state"
                     name="state"
                     variant="outlined"
                     margin="dense"
@@ -505,6 +533,7 @@ export const FacilityCreate = (props: FacilityProps) => {
                   <CircularProgress size={20} />
                 ) : (
                   <SelectField
+                    data-test="facility-district"
                     name="district"
                     variant="outlined"
                     margin="dense"
@@ -526,6 +555,7 @@ export const FacilityCreate = (props: FacilityProps) => {
                   <CircularProgress size={20} />
                 ) : (
                   <SelectField
+                    data-test="facility-localbody"
                     name="local_body"
                     variant="outlined"
                     margin="dense"
@@ -546,6 +576,7 @@ export const FacilityCreate = (props: FacilityProps) => {
                   <CircularProgress size={20} />
                 ) : (
                   <SelectField
+                    data-test="facility-ward"
                     name="ward"
                     variant="outlined"
                     margin="dense"
@@ -563,8 +594,11 @@ export const FacilityCreate = (props: FacilityProps) => {
               </div>
 
               <div className="md:col-span-2">
-                <InputLabel id="name-label">Address*</InputLabel>
+                <InputLabel htmlFor="facility-address" id="name-label">
+                  Address*
+                </InputLabel>
                 <MultilineInputField
+                  id="facility-address"
                   rows={5}
                   name="address"
                   placeholder=""
@@ -576,8 +610,11 @@ export const FacilityCreate = (props: FacilityProps) => {
                 />
               </div>
               <div>
-                <InputLabel id="name-label">Pincode*</InputLabel>
+                <InputLabel htmlFor="facility-pincode" id="name-label">
+                  Pincode*
+                </InputLabel>
                 <TextInputField
+                  id="facility-pincode"
                   name="pincode"
                   variant="outlined"
                   margin="dense"
@@ -601,10 +638,14 @@ export const FacilityCreate = (props: FacilityProps) => {
 
               <div className="grid grid-cols-2">
                 <div>
-                  <InputLabel id="oxygen_capacity">
+                  <InputLabel
+                    htmlFor="facility-oxygen-capacity"
+                    id="oxygen_capacity"
+                  >
                     Liquid Oxygen Capacity (l)
                   </InputLabel>
                   <TextInputField
+                    id="facility-oxygen-capacity"
                     name="oxygen_capacity"
                     type="number"
                     variant="outlined"
@@ -615,10 +656,14 @@ export const FacilityCreate = (props: FacilityProps) => {
                   />
                 </div>
                 <div>
-                  <InputLabel id="name-label">
+                  <InputLabel
+                    htmlFor="facility-oxygen-requirement"
+                    id="name-label"
+                  >
                     Expected Liquid Oxygen (l)
                   </InputLabel>
                   <TextInputField
+                    id="facility-oxygen-requirement"
                     name="expected_oxygen_requirement"
                     type="number"
                     variant="outlined"
@@ -632,10 +677,14 @@ export const FacilityCreate = (props: FacilityProps) => {
 
               <div className="grid grid-cols-2">
                 <div>
-                  <InputLabel id="type_b_cylinders">
+                  <InputLabel
+                    htmlFor="facility-type-b-cylinders"
+                    id="type_b_cylinders"
+                  >
                     B Type Cylinders
                   </InputLabel>
                   <TextInputField
+                    id="facility-type-b-cylinders"
                     name="type_b_cylinders"
                     type="number"
                     variant="outlined"
@@ -646,10 +695,14 @@ export const FacilityCreate = (props: FacilityProps) => {
                   />
                 </div>
                 <div>
-                  <InputLabel id="expected_type_b_cylinders">
+                  <InputLabel
+                    htmlFor="facility-expected-type-b-cylinders"
+                    id="expected_type_b_cylinders"
+                  >
                     Expected B Type Cylinders
                   </InputLabel>
                   <TextInputField
+                    id="facility-expected-type-b-cylinders"
                     name="expected_type_b_cylinders"
                     type="number"
                     variant="outlined"
@@ -663,10 +716,14 @@ export const FacilityCreate = (props: FacilityProps) => {
 
               <div className="grid grid-cols-2">
                 <div>
-                  <InputLabel id="type_c_cylinders">
+                  <InputLabel
+                    htmlFor="facility-type-c-cylinders"
+                    id="type_c_cylinders"
+                  >
                     C Type Cylinders
                   </InputLabel>
                   <TextInputField
+                    id="facility-type-c-cylinders"
                     name="type_c_cylinders"
                     type="number"
                     variant="outlined"
@@ -677,10 +734,14 @@ export const FacilityCreate = (props: FacilityProps) => {
                   />
                 </div>
                 <div>
-                  <InputLabel id="expected_type_c_cylinders">
+                  <InputLabel
+                    htmlFor="facility-expected-type-c-cylinders"
+                    id="expected_type_c_cylinders"
+                  >
                     Expected C Type Cylinders
                   </InputLabel>
                   <TextInputField
+                    id="facility-expected-type-c-cylinders"
                     name="expected_type_c_cylinders"
                     type="number"
                     variant="outlined"
@@ -694,10 +755,14 @@ export const FacilityCreate = (props: FacilityProps) => {
 
               <div className="grid grid-cols-2">
                 <div>
-                  <InputLabel id="type_d_cylinders">
+                  <InputLabel
+                    htmlFor="facility-type-d-cylinders"
+                    id="type_d_cylinders"
+                  >
                     D Type Cylinders
                   </InputLabel>
                   <TextInputField
+                    id="facility-type-d-cylinders"
                     name="type_d_cylinders"
                     type="number"
                     variant="outlined"
@@ -708,10 +773,14 @@ export const FacilityCreate = (props: FacilityProps) => {
                   />
                 </div>
                 <div>
-                  <InputLabel id="expected_type_d_cylinders">
+                  <InputLabel
+                    htmlFor="facility-expected-type-d-cylinders"
+                    id="expected_type_d_cylinders"
+                  >
                     Expected D Type Cylinders
                   </InputLabel>
                   <TextInputField
+                    id="facility-expected-type-d-cylinders"
                     name="expected_type_d_cylinders"
                     type="number"
                     variant="outlined"
@@ -723,9 +792,72 @@ export const FacilityCreate = (props: FacilityProps) => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2">
+                <div>
+                  <InputLabel id="type_j_cylinders">
+                    J Type Cylinders
+                  </InputLabel>
+                  <TextInputField
+                    name="type_j_cylinders"
+                    type="number"
+                    variant="outlined"
+                    margin="dense"
+                    value={state.form.type_j_cylinders}
+                    onChange={handleChange}
+                    errors={state.errors.type_j_cylinders}
+                  />
+                </div>
+                <div>
+                  <InputLabel id="expected_type_j_cylinders">
+                    Expected J Type Cylinders
+                  </InputLabel>
+                  <TextInputField
+                    name="expected_type_j_cylinders"
+                    type="number"
+                    variant="outlined"
+                    margin="dense"
+                    value={state.form.expected_type_j_cylinders}
+                    onChange={handleChange}
+                    errors={state.errors.expected_type_j_cylinders}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2">
+                <div>
+                  <InputLabel id="type_gaseous">Gaseous Type</InputLabel>
+                  <TextInputField
+                    name="type_gaseous"
+                    type="number"
+                    variant="outlined"
+                    margin="dense"
+                    value={state.form.type_gaseous}
+                    onChange={handleChange}
+                    errors={state.errors.type_gaseous}
+                  />
+                </div>
+                <div>
+                  <InputLabel id="expected_type_gaseous">
+                    Expected Gaseous Type
+                  </InputLabel>
+                  <TextInputField
+                    name="expected_type_gaseous"
+                    type="number"
+                    variant="outlined"
+                    margin="dense"
+                    value={state.form.expected_type_gaseous}
+                    onChange={handleChange}
+                    errors={state.errors.expected_type_gaseous}
+                  />
+                </div>
+              </div>
+
               <div>
-                <InputLabel id="kasp_empanelled">
-                  Is this facility KASP empanelled?
+                <InputLabel
+                  htmlFor="facility-kasp-empanelled"
+                  id="kasp_empanelled"
+                >
+                  Is this facility MJPJAY empanelled?
                 </InputLabel>
                 <RadioGroup
                   aria-label="kasp_empanelled"
@@ -734,7 +866,11 @@ export const FacilityCreate = (props: FacilityProps) => {
                   onChange={handleChange}
                   style={{ padding: "0px 5px" }}
                 >
-                  <Box display="flex" flexDirection="row">
+                  <Box
+                    display="flex"
+                    id="facility-kasp-empanelled"
+                    flexDirection="row"
+                  >
                     <FormControlLabel
                       value="true"
                       control={<Radio />}
@@ -764,7 +900,10 @@ export const FacilityCreate = (props: FacilityProps) => {
                 />
               </div>
               <div className="pt-4">
-                <IconButton onClick={handleClickLocationPicker}>
+                <IconButton
+                  id="facility-location-button"
+                  onClick={handleClickLocationPicker}
+                >
                   <MyLocationIcon />
                 </IconButton>
                 <Popover
@@ -807,6 +946,7 @@ export const FacilityCreate = (props: FacilityProps) => {
                 Cancel
               </Button>
               <Button
+                id="facility-save"
                 color="primary"
                 variant="contained"
                 type="submit"
