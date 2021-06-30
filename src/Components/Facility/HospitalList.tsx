@@ -29,14 +29,14 @@ import AccordionDetails from "@material-ui/core/AccordionDetails";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { MJPJAY } from "../../Common/mahakavach";
-const Loading = loadable(() => import("../Common/Loading"));
-const PageTitle = loadable(() => import("../Common/PageTitle"));
 import SwipeableViews from "react-swipeable-views";
 import { make as SlideOver } from "../Common/SlideOver.gen";
 import FacillityFilter from "./FacilityFilter";
 import { FacilitySelect } from "../Common/FacilitySelect";
 import { withTranslation } from "react-i18next";
 import { any } from "cypress/types/bluebird";
+const Loading = loadable(() => import("../Common/Loading"));
+const PageTitle = loadable(() => import("../Common/PageTitle"));
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
