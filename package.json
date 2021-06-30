@@ -14,8 +14,8 @@
   "contributors": [
     "coronasafe Contributors"
   ],
-  "homepage": "https://care.coronasafe.in",
-  "proxy": "https://careapi.coronasafe.in",
+  "homepage": "https://care.mahakavach.in/",
+  "proxy": "https://careapi.mahakavach.in",
   "main": "./src/index.tsx",
   "keywords": [
     "Coronasafe",
