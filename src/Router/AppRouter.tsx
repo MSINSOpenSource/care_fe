@@ -55,9 +55,9 @@ import { AddLocationForm } from "../Components/Facility/AddLocationForm";
 import { LocationManagement } from "../Components/Facility/LocationManagement";
 import AssetsList from "../Components/Assets/AssetsList";
 import AssetManage from "../Components/Assets/AssetManage";
+import img from "../Common/mahakavach/MSInS_logo_white.png";
 
 const get = require("lodash.get");
-const img = "https://cdn.coronasafe.network/light-logo.svg";
 const logoBlack = "https://cdn.coronasafe.network/black-logo.svg";
 
 const routes = {
@@ -414,7 +414,7 @@ const AppRouter = (props: any) => {
               </div>
               <div className="flex-shrink-0 flex items-center px-4">
                 <a href="/">
-                  <img className="h-8 w-auto" src={img} alt="care logo" />
+                  <img src={img} alt="msins logo" />
                 </a>
               </div>
               <div className="mt-5 flex-1 h-0 overflow-y-auto">
@@ -492,7 +492,10 @@ const AppRouter = (props: any) => {
 
       <div className="hidden md:flex md:flex-shrink-0">
         <div className="flex flex-col w-64 bg-primary-800 pt-5">
-          <div className="flex items-center flex-shrink-0 px-4">
+          <div
+            className="flex items-center flex-shrink-0 px-4"
+            style={{ height: "90px" }}
+          >
             <a href="/">
               <img className="h-8 w-auto" src={img} alt="care logo" />
             </a>
