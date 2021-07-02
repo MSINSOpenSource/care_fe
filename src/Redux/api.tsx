@@ -2,6 +2,7 @@ interface Route {
   path: string;
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   noAuth?: boolean;
+  headers?: object;
 }
 
 interface Routes {
@@ -333,7 +334,11 @@ const routes: Routes = {
     path: "/api/v1/external_result/bulk_upsert/",
     method: "POST",
   },
-
+  externalResultUploadExcel: {
+    path: "/api/v1/external_result/bulk_upsert_icmr/",
+    method: "POST",
+    headers: { "Content-Type": "multipart/form-data" },
+  },
   deleteExternalResult: {
     path: "/api/v1/external_result",
     method: "DELETE",
@@ -497,7 +502,14 @@ const routes: Routes = {
     path: "/api/v1/shift/",
     method: "GET",
   },
-
+  getShiftComments: {
+    path: "/api/v1/shift/{id}/comment/",
+    method: "GET",
+  },
+  addShiftComments: {
+    path: "/api/v1/shift/{id}/comment/",
+    method: "POST",
+  },
   // Notifications
   getNotifications: {
     path: "/api/v1/notification/",
