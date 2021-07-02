@@ -334,6 +334,10 @@ const routes: Routes = {
     path: "/api/v1/external_result/bulk_upsert/",
     method: "POST",
   },
+  getLastUploadedIcmrDetails: {
+    path: "/api/v1/external_result_history/",
+    method: "GET",
+  },
   externalResultUploadExcel: {
     path: "/api/v1/external_result/bulk_upsert_icmr/",
     method: "POST",
