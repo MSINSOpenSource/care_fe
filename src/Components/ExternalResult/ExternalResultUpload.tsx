@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { statusType, useAbortableEffect } from "../../Common/utils";
 import {
+  getLastUploadedIcmrDetails,
   externalResultUploadExcel,
   externalResultUploadCsv,
   getAllLocalBodyByDistrict,
@@ -18,12 +19,14 @@ import {
 import { ExternalResultLocalbodySelector } from "./ExternalResultLocalbodySelector";
 import StateManager from "react-select";
 import { CircularProgress } from "@material-ui/core";
+import moment from "moment";
 const get = require("lodash.get");
 const Loading = loadable(() => import("../Common/Loading"));
 const PageTitle = loadable(() => import("../Common/PageTitle"));
 
 export default function ExternalResultUpload() {
   const dispatch: any = useDispatch();
+
   const [uploadFile, setUploadFile] = useState("");
   // for disabling save button once clicked
   const [loading, setLoading] = useState(false);
@@ -45,6 +48,13 @@ export default function ExternalResultUpload() {
       })
       .catch(() => setLoading(false));
   };
+
+  const [lastUploadedDetails, setLastUploadedDetails] = useState<any>({});
+  useEffect(() => {
+    dispatch(getLastUploadedIcmrDetails()).then((resp: any) => {
+      setLastUploadedDetails(resp.data[0]);
+    });
+  }, []);
 
   // const fetchLSG = useCallback(
   //   async (status: statusType) => {
@@ -176,7 +186,44 @@ export default function ExternalResultUpload() {
               );
             })}
           </div>
-          <div className=""></div>
+          {lastUploadedDetails && (
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-1 m-4 md:px-4">
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <dl>
+                    <dt className="text-sm leading-5 font-medium text-gray-500 truncate">
+                      Last Uploaded file
+                    </dt>
+                    <dd className="mt-4 text-2l leading-9 font-semibold text-gray-900 ">
+                      {lastUploadedDetails.file_name}
+                    </dd>
+                  </dl>
+                </div>
+                <div className="px-4 py-5 sm:p-6">
+                  <dl>
+                    <dt className="text-sm leading-5 font-medium text-gray-500 truncate">
+                      Uploaded by
+                    </dt>
+                    <dd className="mt-4 text-2l leading-9 font-semibold text-gray-900">
+                      {lastUploadedDetails.uploaded_by}
+                    </dd>
+                  </dl>
+                </div>
+                <div className="px-4 py-5 sm:p-6">
+                  <dl>
+                    <dt className="text-sm leading-5 font-medium text-gray-500 truncate">
+                      Most recent date of sample tested in file
+                    </dt>
+                    <dd className="mt-4 text-2l leading-9 font-semibold text-gray-900">
+                      {moment(
+                        lastUploadedDetails.most_recent_date_of_sample_tested_in_file
+                      ).format("lll")}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

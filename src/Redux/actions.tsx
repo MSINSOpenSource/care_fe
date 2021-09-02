@@ -420,6 +420,9 @@ export const externalResult = (pathParam: object) => {
 export const externalResultUploadCsv = (params: object) => {
   return fireRequest("externalResultUploadCsv", [], params);
 };
+export const getLastUploadedIcmrDetails = () => {
+  return fireRequest("getLastUploadedIcmrDetails", []);
+};
 export const externalResultUploadExcel = (files: any, params?: object) => {
   return fireRequestFileUpload("externalResultUploadExcel", [], params, files);
 };
